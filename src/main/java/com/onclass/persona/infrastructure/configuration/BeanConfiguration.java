@@ -4,6 +4,7 @@ import com.onclass.persona.domain.api.IPersonaServicePort;
 import com.onclass.persona.domain.constants.PersonaConstants;
 import com.onclass.persona.domain.spi.IBootcampServicePort;
 import com.onclass.persona.domain.spi.IPersonaPersistencePort;
+import com.onclass.persona.domain.spi.IReporteServicePort;
 import com.onclass.persona.domain.usecase.PersonaUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +23,8 @@ public class BeanConfiguration {
     @Bean
     public IPersonaServicePort personaServicePort(
             IPersonaPersistencePort persistencePort,
-            IBootcampServicePort bootcampServicePort) {
-        return new PersonaUseCase(persistencePort, bootcampServicePort);
+            IBootcampServicePort bootcampServicePort,
+            IReporteServicePort reporteServicePort) {
+        return new PersonaUseCase(persistencePort, bootcampServicePort, reporteServicePort);
     }
 }

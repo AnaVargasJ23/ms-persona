@@ -8,6 +8,7 @@ import com.onclass.persona.domain.model.Bootcamp;
 import com.onclass.persona.domain.model.Persona;
 import com.onclass.persona.domain.spi.IBootcampServicePort;
 import com.onclass.persona.domain.spi.IPersonaPersistencePort;
+import com.onclass.persona.domain.spi.IReporteServicePort;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,6 +20,7 @@ public class PersonaUseCase implements IPersonaServicePort {
 
     private final IPersonaPersistencePort persistencePort;
     private final IBootcampServicePort bootcampServicePort;
+    private final IReporteServicePort reporteServicePort;
 
     @Override
     public Mono<Persona> registrar(Persona persona) {
@@ -60,7 +62,7 @@ public class PersonaUseCase implements IPersonaServicePort {
                                             }
                                             return persistencePort.obtenerBootcampsDePersona(personaId)
                                                     .collectList()
-                                                    .flatMap(idsBootcamps -> 
+                                                    .flatMap(idsBootcamps ->
                                                         Flux.fromIterable(idsBootcamps)
                                                             .flatMap(b -> bootcampServicePort.obtenerBootcamp(b.getId()))
                                                             .collectList()
@@ -79,7 +81,10 @@ public class PersonaUseCase implements IPersonaServicePort {
                                                                             PersonaErrorEnum.SOLAPAMIENTO_FECHAS.getCode(),
                                                                             PersonaErrorEnum.SOLAPAMIENTO_FECHAS.getMessage()));
                                                                 }
-                                                                return persistencePort.inscribirEnBootcamp(personaId, bootcampId);
+                                                                return persistencePort.inscribirEnBootcamp(personaId, bootcampId)
+                                                                        .then(persistencePort.contarBootcampsDePersona(personaId)
+                                                                                .doOnNext(total -> reporteServicePort.actualizarPersonas(bootcampId, total))
+                                                                                .then());
                                                             })
                                                     );
                                         })
